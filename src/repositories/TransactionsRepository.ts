@@ -1,9 +1,16 @@
+import { json } from 'express';
 import Transaction from '../models/Transaction';
 
 interface Balance {
   income: number;
   outcome: number;
   total: number;
+}
+
+interface CreateTransactionDTO {
+  title: string;
+  value: number;
+  type: 'income' | 'outcome';
 }
 
 class TransactionsRepository {
@@ -14,15 +21,35 @@ class TransactionsRepository {
   }
 
   public all(): Transaction[] {
-    // TODO
+    return this.transactions;
   }
 
   public getBalance(): Balance {
-    // TODO
+    const sumIncomes = this.transactions
+      .filter(transaction => transaction.type === 'income')
+      .reduce((prev, cur) => prev + cur.value, 0);
+
+    const sumOutcomes = this.transactions
+      .filter(transaction => transaction.type === 'outcome')
+      .reduce((prev, cur) => prev + cur.value, 0);
+
+    const totalBalance = sumIncomes - sumOutcomes;
+
+    const jsonObj = {
+      income: sumIncomes,
+      outcome: sumOutcomes,
+      total: totalBalance,
+    };
+
+    return jsonObj;
   }
 
-  public create(): Transaction {
-    // TODO
+  public create({ title, value, type }: CreateTransactionDTO): Transaction {
+    const transaction = new Transaction({ title, value, type });
+
+    this.transactions.push(transaction);
+
+    return transaction;
   }
 }
 
