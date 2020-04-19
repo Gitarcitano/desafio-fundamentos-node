@@ -14,11 +14,12 @@ class CreateTransactionService {
   }
 
   public execute({ title, value, type }: Request): Transaction {
-    if (
-      type === 'outcome' &&
-      value > this.transactionsRepository.getBalance().total
-    ) {
-      throw Error('This transaction was not authorized');
+    if (!['income', 'outcome'].includes(type))
+      throw new Error('Transaction type is invalid.');
+
+    const { total } = this.transactionsRepository.getBalance();
+    if (type === 'outcome' && value > total) {
+      throw new Error('This transaction was not authorized');
     }
     const transaction = this.transactionsRepository.create({
       title,
